@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#define n 10
+#define n 100
 
 typedef struct {
 	//enum fl_t;
@@ -13,9 +13,12 @@ typedef struct {
 	/* write rest of code here */
 } staff_t;
 
-void accountCreate (customer_t* client) {
-	//client[0].id += 1; grab id from previous user, add one
-	printf("Here's your new ID:%d\n", client[0].id);
+void accountCreate (customer_t* client, int *numCount) {
+	printf("%d\n", *numCount);
+	client[*numCount].id = *numCount + 1; //grab id from previous user, add one
+	printf("Here's your new ID:%d\n", client[*numCount].id);
+
+	*numCount += 1; //updates count for next registry
 }
 
 void accountAuthenticate(customer_t* client) {
@@ -30,7 +33,7 @@ void accountAuthenticate(customer_t* client) {
 	}
 }
 
-void customerInterface(customer_t* client) {
+void customerInterface(customer_t* client, int *numCount) {
 	int uAccount;
 
 	printf("\nAre you a new or returning customer?\n");
@@ -43,7 +46,7 @@ void customerInterface(customer_t* client) {
 	} while (!(uAccount == 1 || uAccount == 2));
 
 	if(uAccount == 1)
-		accountCreate(client);
+		accountCreate(client, numCount);
 	else
 		accountAuthenticate(client);
 	
@@ -57,8 +60,8 @@ void companyInterface() {
 int main() {
 	int userOption = 0;
 	customer_t client[n];
-	client[0].id = 0;
-	//customer_t *pClient = &client[0];
+	client[0].id = 0; 
+	int numCount = 0;
 
 	while(userOption != 3) {
 	printf("\nWelcome to Alaska International Airways\n");
@@ -73,7 +76,7 @@ int main() {
 
 	switch(userOption){
 		case 1:
-			customerInterface(client);
+			customerInterface(client, &numCount);
 			break;
 		case 2:
 			companyInterface();
