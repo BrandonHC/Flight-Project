@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#define n 100
+#define n 10
 
 typedef struct {
 	//enum fl_t;
@@ -13,12 +13,13 @@ typedef struct {
 	/* write rest of code here */
 } staff_t;
 
-void accountCreate (customer_t* client, int *numCount) {
-	printf("%d\n", *numCount);
-	client[*numCount].id = *numCount + 1; //grab id from previous user, add one
-	printf("Here's your new ID:%d\n", client[*numCount].id);
+void accountCreate (customer_t* client, int *registry) {
+	printf("%d\n", *registry);
+	client[*registry].id = *registry + 1; //Updates registry, then implements ID
+	printf("\nA new account has been generated with ID: %d\n", client[*registry].id);
+	++(*registry);
 
-	*numCount += 1; //updates count for next registry
+	return;
 }
 
 void accountAuthenticate(customer_t* client) {
@@ -29,11 +30,15 @@ void accountAuthenticate(customer_t* client) {
 	for(int i = 0; i < n; ++i) {
 		if(userNum == client[i].id) {
 			printf("Account found\n");
+			return;
 		}
 	}
+
+	printf("\nThis ID has not been registered in our database\n");
+	return;
 }
 
-void customerInterface(customer_t* client, int *numCount) {
+void customerInterface(customer_t* client, int *registry) {
 	int uAccount;
 
 	printf("\nAre you a new or returning customer?\n");
@@ -45,9 +50,12 @@ void customerInterface(customer_t* client, int *numCount) {
 			printf("Error, please enter a valid key: ");
 	} while (!(uAccount == 1 || uAccount == 2));
 
-	if(uAccount == 1)
-		accountCreate(client, numCount);
-	else
+	if(uAccount == 1) {
+		if(*registry == n) {
+			printf("The maximum number of space has been reached within the database.\nAn account cannot be made at this moment.\n");
+		} else
+			accountCreate(client, registry);
+	} else
 		accountAuthenticate(client);
 	
 	return;
@@ -59,29 +67,33 @@ void companyInterface() {
 
 int main() {
 	int userOption = 0;
-	customer_t client[n];
-	client[0].id = 0; 
-	int numCount = 0;
+	customer_t client[n] = {0};
+	//client[0].id = 0; 
+	int registry = 0;
 
 	while(userOption != 3) {
-	printf("\nWelcome to Alaska International Airways\n");
-	printf("[1] Customer\t[2] Staff\n[3] Exit Program\n");
-	printf("Enter one of the displayed keys above: ");
+		printf("\nWelcome to Alaska International Airways\n");
+		printf("[1] Customer\t[2] Staff\n[3] Exit Program\n");
+		printf("Enter one of the displayed keys above: ");
 
-	do {
-		scanf("%d", &userOption);
-		if (!(userOption == 1 || userOption == 2 || userOption == 3))
-		       printf("Error, please input a valid key: ");
- 	} while (!(userOption == 1 || userOption == 2 || userOption == 3));
+		do {
+			scanf("%d", &userOption);
+			if (!(userOption == 1 || userOption == 2 || userOption == 3))
+				printf("Error, please input a valid key: ");
+		} while (!(userOption == 1 || userOption == 2 || userOption == 3));
 
-	switch(userOption){
-		case 1:
-			customerInterface(client, &numCount);
-			break;
-		case 2:
-			companyInterface();
-			break;
-	}	
+		switch(userOption) {
+			case 1:
+				customerInterface(client, &registry);
+				break;
+			case 2:
+				companyInterface();
+				break;
+		}
+
+		/* for(int i = 0; i < n; ++i) {
+			printf("ARRAY INDEX: %d, CLIENT ID: %d\n", i, client[i].id);
+		} FOR DEBUGGING PURPOSES - LISTS DATA WITHIN CLIENT STRUCT ARRAY AND CORRESPONDING ID*/ 
 	}
 
 	return 0;
