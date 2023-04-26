@@ -134,7 +134,7 @@ int main() {
 
 		/* for(int i = 0; i < n; ++i) {
 			printf("ARRAY INDEX: %d, CLIENT ID: %d\n", i, client[i].id);
-		} //FOR DEBUGGING PURPOSES - LISTS DATA WITHIN CLIENT STRUCT ARRAY AND CORRESPONDING ID */
+		} //FOR DEBUGGING PURPOSES - LISTS DATA WITHIN CLIENT STRUCT ARRAY AND CORRESPONDING ID  */
 	}
 
 	return 0;
