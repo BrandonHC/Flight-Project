@@ -2,6 +2,7 @@
 
 #define MAXCLIENTS 20
 #define MAXROUTES 10
+#define FLIGHTROWSIZE 6
 
 typedef struct {
 	int seats[6][40];
@@ -29,7 +30,7 @@ typedef struct {
 	}
 
 	printf("\n");
-	for(i = 0; i < sizeof(flight[0].seats)/sizeof(flight[0].seats[0]); ++i) {
+	for(i = 0; i < FLIGHTROWSIZE; ++i) {
 			for(int j = 0; j < sizeof(flight[0].seats[0])/sizeof(flight[0].seats[0][0]); ++j)
 				printf("[%c] ", seat);
 		printf("\n");
@@ -118,7 +119,7 @@ void companyInterface() {
 }
 
 void initializeFlights(flight_t* flight, int flightNum) {
-    for(int i = 0; i < sizeof(flight[0].seats)/sizeof(flight[0].seats[0]); ++i) {
+    for(int i = 0; i < FLIGHTROWSIZE; ++i) {
             for(int j = 0; j < sizeof(flight[0].seats[0])/sizeof(flight[0].seats[0][0]); ++j)
                 flight[flightNum].seats[i][j] = 0;
     }
