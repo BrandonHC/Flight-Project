@@ -7,11 +7,12 @@
 
 typedef struct {
 	int seats[6][40];
+	int capacity;
 } flight_t;
 
 typedef struct {
 	bool hasSlot;
-	int routeNum;  
+	int routeNum;
 	int id;
 } customer_t;
 
@@ -56,9 +57,9 @@ void reserveSeats(flight_t* flight, customer_t* client, int userID, int route) {
 		do {
 			printf("Select the Seat Number (Number Column): ");
 			scanf("%d", &cSeat);
-			if(!(cSeat <= 40 && cSeat >= 1))
+			if(!(cSeat <= sizeof(flight[0].seats[0])/sizeof(flight[0].seats[0][0]) && cSeat >= 1))
 				printf("Invalid input, please try again.\n");
-		} while (!(cSeat <= 40 && cSeat >= 1));
+		} while (!(cSeat <= sizeof(flight[0].seats[0])/sizeof(flight[0].seats[0][0]) && cSeat >= 1));
 
 		do {
 			printf("Select a Seat Letter (Row Letter): ");
@@ -74,12 +75,31 @@ void reserveSeats(flight_t* flight, customer_t* client, int userID, int route) {
 	}
 
 	client[userID - 1].routeNum = route;
-	flight[route].seats[(int)rSeat - 65][cSeat - 1] = client[userID - 1].id;
 	client[userID - 1].hasSlot = true;
+
+	flight[route].seats[(int)rSeat - 65][cSeat - 1] = client[userID - 1].id;
+	++(flight[route].capacity);
+
+	printf("Thank you for using our service, your seat is located at %d%c\n", cSeat, rSeat);
+}
+
+bool checkMaxFlights(flight_t* flight) {
+	int maxFlights = 0;
+
+	for(int i = 0; i < 2; ++i) {
+		if(flight[i].capacity == 40)
+			++maxFlights;
+	}
+
+	if(maxFlights == 2)
+		return true;
+	else
+		return false;
 }
 
 void deleteUserSlot(flight_t* flight, customer_t* client, int userID) {
 	client[userID - 1].hasSlot = false;
+	--(flight[client[userID - 1].routeNum].capacity);
 
 	for(int i = 0; i < FLIGHTROWSIZE; ++i)
 		for(int j = 0; j < sizeof(flight[0].seats[0])/sizeof(flight[0].seats[0][0]); ++j) {
@@ -115,7 +135,8 @@ int accountAuthenticate(customer_t* client) {
 
 void customerInterface(customer_t* client, flight_t* flight, int *registry) {
 	int uAccount = 0;
-	int route, userID, userChoice;
+	int userID = 1; //works for now
+	int route, userChoice;
 
 	while(uAccount != 3 && uAccount != -1) {
 		printf("\nAre you a new or returning customer?\n");
@@ -130,31 +151,39 @@ void customerInterface(customer_t* client, flight_t* flight, int *registry) {
 		if (uAccount == 1) {
 			if(*registry == MAXCLIENTS)
 				printf("\nThe maximum number of space has been reached within the database.\nAn account cannot be made at this moment.\n");
-			else
+			else {
 				userID = accountCreate(client, registry);
 				uAccount = -1;
-		} else if (uAccount == 2)
+			}
+		} else if (uAccount == 2) {
 			userID = accountAuthenticate(client);
-				if(userID != -1) {
-					if(client[userID - 1].hasSlot) {
-						printf("There is a flight registered with this account, would you like to delete your current reservation?\n[1] Delete\t[2] Exit\n");
-						do {
-							scanf("%d", &userChoice);
+
+			if(userID != -1) {
+				if(client[userID - 1].hasSlot) {
+					printf("There is a flight registered with this account, would you like to delete your current reservation?\n[1] Delete\t[2] Exit\n");
+					do {
+						scanf("%d", &userChoice);
 						if (!(userChoice == 1 || userChoice == 2))
 							printf("Invalid input, please try again: ");
-						} while (!(userChoice == 1 || userChoice == 2));
+					} while (!(userChoice == 1 || userChoice == 2));
 
-					if (userChoice == 1)
-						deleteUserSlot(flight, client, userID);
-					else
-						return;
-					}
+				if (userChoice == 1)
+					deleteUserSlot(flight, client, userID);
 				else
-					uAccount = -1;
+					return;
 				}
+			else
+				uAccount = -1;
+			}
+		}
 	}
 
-	if(uAccount == -1) { //Flight Reservation & seat
+	if(uAccount == -1) {
+		if(checkMaxFlights(flight) == true) {
+			printf("All flights are at maximum capacity, no reservations can be made at this moment.\n");
+			return;
+		}
+
 		printf("\nThere are 2 flights available at this moment.\n");
 		printf("[1] Chicago\t[2] Austin\nSelect one of the options above: ");
 
@@ -162,10 +191,12 @@ void customerInterface(customer_t* client, flight_t* flight, int *registry) {
 			scanf("%d", &route);
 			if(!(route == 1 || route == 2))
 				printf("Error, please select a valid option and try again: ");
-		} while (!(route == 1 || route == 2));
+			else if (flight[route - 1].capacity >= 40)	
+				printf("This flight has reached the max capacitants, please select a different flight: ");
+		} while (!(route == 1 || route == 2) || flight[route - 1].capacity >= 40);
 
-		printflSeats(flight, route);
-		reserveSeats(flight, client, userID, route);
+		printflSeats(flight, route - 1);
+		reserveSeats(flight, client, userID, route - 1);
 	}
 }
 
@@ -175,8 +206,10 @@ void companyInterface() {
 
 void initializeFlights(flight_t* flight, int flightNum) {
     for(int i = 0; i < FLIGHTROWSIZE; ++i) {
-            for(int j = 0; j < sizeof(flight[0].seats[0])/sizeof(flight[0].seats[0][0]); ++j)
+            for(int j = 0; j < sizeof(flight[0].seats[0])/sizeof(flight[0].seats[0][0]); ++j) {
                 flight[flightNum].seats[i][j] = 0;
+				flight[flightNum].capacity = 0;
+			}
     }
 }
 
