@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 
 #define MAXCLIENTS 20
 #define MAXROUTES 10
@@ -9,7 +10,8 @@ typedef struct {
 } flight_t;
 
 typedef struct {
-	//enum fl_t;
+	bool hasSlot;
+	int routeNum;  
 	int id;
 } customer_t;
 
@@ -31,8 +33,12 @@ typedef struct {
 
 	printf("\n");
 	for(i = 0; i < FLIGHTROWSIZE; ++i) {
-			for(int j = 0; j < sizeof(flight[0].seats[0])/sizeof(flight[0].seats[0][0]); ++j)
-				printf("[%c] ", seat);
+			for(int j = 0; j < sizeof(flight[0].seats[0])/sizeof(flight[0].seats[0][0]); ++j) {
+				if(flight[route].seats[i][j] == 0)
+					printf("[%c] ", seat);
+				else
+					printf("[-] ");
+			}
 		printf("\n");
 
 		if(i == 2)
@@ -41,21 +47,54 @@ typedef struct {
 	}
 }
 
-void reserveSeats(flight_t* flight, customer_t* client) {
+void reserveSeats(flight_t* flight, customer_t* client, int userID, int route) {
 	int cSeat; //Row Number
-	char rSeat; //Column Char -> Number
+	char rSeat; //Coloumn Char -> Number
+	bool availSeat = true;
 
-	printf("Select the seat number (Column Number): %d", &cSeat);
-	printf("Select the seat letter (Row Letter): ", &rSeat);
-	return;
+	while(availSeat == true) {
+		do {
+			printf("Select the Seat Number (Number Column): ");
+			scanf("%d", &cSeat);
+			if(!(cSeat <= 40 && cSeat >= 1))
+				printf("Invalid input, please try again.\n");
+		} while (!(cSeat <= 40 && cSeat >= 1));
+
+		do {
+			printf("Select a Seat Letter (Row Letter): ");
+			scanf(" %c", &rSeat);
+			if(!(rSeat >= 'A' && rSeat <= 'F'))
+				printf("Invalid input, please try again.\n");
+		} while (!(rSeat >= 'A' && rSeat <= 'F'));
+
+		if(flight[route].seats[(int)rSeat - 65][cSeat - 1] != 0)
+			printf("This seat has been taken, please select a different seat.\n");
+		else
+			availSeat = false;
+	}
+
+	client[userID - 1].routeNum = route;
+	flight[route].seats[(int)rSeat - 65][cSeat - 1] = client[userID - 1].id;
+	client[userID - 1].hasSlot = true;
 }
 
-void accountCreate (customer_t* client, int *registry) {
+void deleteUserSlot(flight_t* flight, customer_t* client, int userID) {
+	client[userID - 1].hasSlot = false;
+
+	for(int i = 0; i < FLIGHTROWSIZE; ++i)
+		for(int j = 0; j < sizeof(flight[0].seats[0])/sizeof(flight[0].seats[0][0]); ++j) {
+			if(flight[client[userID - 1].routeNum].seats[i][j] == client[userID - 1].id)
+				flight[client[userID - 1].routeNum].seats[i][j] = 0;
+		} 
+}
+
+int accountCreate (customer_t* client, int *registry) {
 	client[*registry].id = *registry + 1; //Implements ID
 	printf("\n* A new account has been generated with ID: %d\n", client[*registry].id);
+	client[*registry].hasSlot = false;
 	++(*registry);
 
-	return;
+	return client[*registry - 1].id;
 }
 
 int accountAuthenticate(customer_t* client) {
@@ -66,17 +105,17 @@ int accountAuthenticate(customer_t* client) {
 	for(int i = 0; i < MAXCLIENTS; ++i) {
 		if(userNum == client[i].id && userNum != 0) {
 			printf("Account found\n");
-			return -1; //works for now - fix later
+			return client[i].id;
 		}
 	}
 
 	printf("\nThis ID has not been registered in our database.\n");
-	return 0;
+	return -1;
 }
 
 void customerInterface(customer_t* client, flight_t* flight, int *registry) {
 	int uAccount = 0;
-	int route;
+	int route, userID, userChoice;
 
 	while(uAccount != 3 && uAccount != -1) {
 		printf("\nAre you a new or returning customer?\n");
@@ -92,15 +131,32 @@ void customerInterface(customer_t* client, flight_t* flight, int *registry) {
 			if(*registry == MAXCLIENTS)
 				printf("\nThe maximum number of space has been reached within the database.\nAn account cannot be made at this moment.\n");
 			else
-				accountCreate(client, registry);
+				userID = accountCreate(client, registry);
 				uAccount = -1;
 		} else if (uAccount == 2)
-			uAccount = accountAuthenticate(client);
+			userID = accountAuthenticate(client);
+				if(userID != -1) {
+					if(client[userID - 1].hasSlot) {
+						printf("There is a flight registered with this account, would you like to delete your current reservation?\n[1] Delete\t[2] Exit\n");
+						do {
+							scanf("%d", &userChoice);
+						if (!(userChoice == 1 || userChoice == 2))
+							printf("Invalid input, please try again: ");
+						} while (!(userChoice == 1 || userChoice == 2));
+
+					if (userChoice == 1)
+						deleteUserSlot(flight, client, userID);
+					else
+						return;
+					}
+				else
+					uAccount = -1;
+				}
 	}
 
 	if(uAccount == -1) { //Flight Reservation & seat
 		printf("\nThere are 2 flights available at this moment.\n");
-		printf("[1] Chicago\t[2] Austin\nSelect one of the options above: \n");
+		printf("[1] Chicago\t[2] Austin\nSelect one of the options above: ");
 
 		do {
 			scanf("%d", &route);
@@ -109,9 +165,8 @@ void customerInterface(customer_t* client, flight_t* flight, int *registry) {
 		} while (!(route == 1 || route == 2));
 
 		printflSeats(flight, route);
+		reserveSeats(flight, client, userID, route);
 	}
-	
-	return;
 }
 
 void companyInterface() {
@@ -123,25 +178,19 @@ void initializeFlights(flight_t* flight, int flightNum) {
             for(int j = 0; j < sizeof(flight[0].seats[0])/sizeof(flight[0].seats[0][0]); ++j)
                 flight[flightNum].seats[i][j] = 0;
     }
-
-	return;
 }
 
 int main() {
-	int userOption = 0;
 	customer_t client[MAXCLIENTS] = {0};
 	staff_t staff[MAXCLIENTS] = {0};
 	flight_t flight[MAXROUTES];
 	int registry = 0;
-	int staffReg = 0;
+	int userOption = 0;
 
     for(int i = 0; i < MAXROUTES; ++i)
         initializeFlights(flight, i); //sets plane seat contents to zero for every plane
     
 	while(userOption != 3) {
-		//printf("ROW SIZE: %d", sizeof(flight[0].seats)/sizeof(flight[0].seats[0]));
-		//printf("COLUMN SIZE: %d", sizeof(flight[0].seats[0])/sizeof(flight[0].seats[0][0]));
-
 		printf("Welcome to Wisp Airlines\n");
 		printf("[1] Customer\t[2] Staff\n[3] Exit Program\n");
 		printf("Select one of the displayed options above: ");
@@ -160,11 +209,6 @@ int main() {
 				companyInterface();
 				break;
 		}
-
-		/* for(int i = 0; i < MAXCLIENTS; ++i) {
-			printf("ARRAY INDEX: %d, CLIENT ID: %d\MAXCLIENTS", i, client[i].id);
-		} //FOR DEBUGGING PURPOSES - LISTS DATA WITHIN CLIENT STRUCT ARRAY AND CORRESPONDING ID  */
 	}
-
 	return 0;
 }
