@@ -1,12 +1,20 @@
 #include <stdio.h>
 #include <stdbool.h>
+
 #define MAXCLIENTS 20
 #define MAXROUTES 10
 #define FLIGHTROWSIZE 6
-//Brandon's code starts here
+
+struct employee {
+    int empID;
+    int flight;
+};
+
 typedef struct {
 	int seats[6][40];
 	int capacity;
+	int num;
+    struct employee employees[4];
 } flight_t;
 
 typedef struct {
@@ -14,11 +22,6 @@ typedef struct {
 	int routeNum;
 	int id;
 } customer_t;
-
-typedef struct {
-	/* write rest of code here */
-	int id;
-} staff_t;
 
  void printflSeats(flight_t* flight, int route) {
 	char seat = 'A'; //starting seat
@@ -199,8 +202,68 @@ void customerInterface(customer_t* client, flight_t* flight, int *registry) {
 	}
 }
 
-void companyInterface() {
-    
+void createEmployee(struct employee *point, int id, int fnum) {
+    point->empID = id;
+    point->flight = fnum;
+}
+
+void addEmployee(flight_t* flight, struct employee *employee, int fnum, int crewnum) {
+    flight[fnum - 1].employees[crewnum].empID = employee->empID;
+    flight[fnum - 1].employees[crewnum].flight = employee->flight;
+}
+
+void removeEmployee(flight_t* flight, struct employee *employee, int fnum, int crewnum) {
+    flight[fnum - 1].employees[crewnum].empID = 0;
+    flight[fnum - 1].employees[crewnum].flight = 0;
+}
+
+void companyInterface(flight_t* flight, struct employee *employee) {
+	int value;
+
+	printf("Do you want to manage routes, manage employees, or exit the program?\n"); 
+	printf("[1] Manage Routes \n[2] Manage Employees \n[hit any other numerical key] Exit Program \n");
+	scanf("%d", &value);
+		switch(value) {
+			case 1: printf("you have selected to manage routes");
+		{ 
+				//paste code here
+			}
+			break;
+			case 2: printf("you have selected to manage employees\n");
+				int empID, flightNum, crewNum, action;
+				printf("Enter 1 to add employee, 2 to remove employee: ");
+				scanf("%d", &action);
+
+				if (action == 1) {
+					printf("Enter employee ID: ");
+					scanf("%d", &empID);
+
+					printf("Enter flight number: ");
+					scanf("%d", &flightNum);
+
+					printf("Enter crew number: ");
+					scanf("%d", &crewNum);
+
+					struct employee newEmployee;
+					createEmployee(&newEmployee, empID, flightNum);
+					addEmployee(flight, &newEmployee, flightNum, crewNum - 1);
+					printf("Employee added successfully to flight %d\n", flightNum);
+				} else if (action == 2) {
+					printf("Enter flight number: ");
+					scanf("%d", &flightNum);
+			
+					printf("Enter crew number: ");
+					scanf("%d", &crewNum);
+			
+					struct employee employeeToRemove = flight->employees[crewNum - 1];
+					removeEmployee(flight, &employeeToRemove, flightNum, crewNum - 1);
+					printf("Employee removed successfully from flight %d\n", flightNum);
+				} else {
+					printf("Invalid action. Please enter 1 or 2.\n");
+				}
+			break;
+			default: printf("You have selected to return to the menu\n");
+		}
 }
 
 void initializeFlights(flight_t* flight, int flightNum) {
@@ -211,39 +274,11 @@ void initializeFlights(flight_t* flight, int flightNum) {
 			}
     }
 }
-//Brandon's code ends here
-//Jacob's code starts here
-struct employee {
-    int empID;
-    int flight;
-};
 
-struct flight {
-    int num;
-    struct employee employees[4];
-};
-
-void createEmployee(struct employee *point, int id, int fnum) {
-    point->empID = id;
-    point->flight = fnum;
-}
-
-void addEmployee(struct flight *flight, struct employee *employee, int fnum, int crewnum) {
-    flight->employees[crewnum].empID = employee->empID;
-    flight->employees[crewnum].flight = employee->flight;
-}
-
-void removeEmployee(struct flight *flight, struct employee *employee, int fnum, int crewnum) {
-    flight->employees[crewnum].empID = 0;
-    flight->employees[crewnum].flight = 0;
-}
-//Jacob's code ends here
-
-//main code starts here
 int main() {
 	customer_t client[MAXCLIENTS] = {0};
-	staff_t staff[MAXCLIENTS] = {0};
 	flight_t flight[MAXROUTES];
+	struct employee employees[40];
 	int registry = 0;
 	int userOption = 0;
 
@@ -266,56 +301,7 @@ int main() {
 				customerInterface(client, flight, &registry);
 				break;
 			case 2:
-				{
-    int value;
-    printf("Do you want to manage routes, manage employees, or exit the program?\n"); 
-    printf("[1] Manage Routes \n[2] Manage Employees \n[hit any key] Exit Program \n");
-    scanf("%d", &value);
-        switch(value) {
-            case 1: printf("you have selected to manage routes");
-           { 
-//paste code here
-            }
-            break;
-            case 2: printf("you have selected to manage employees\n");
-                struct employee employees[40];
-                struct flight flights[4];
-
-                 int empID, flightNum, crewNum, action;
-                 printf("Enter 1 to add employee, 2 to remove employee: ");
-                 scanf("%d", &action);
-
-                 if (action == 1) {
-                    printf("Enter employee ID: ");
-                    scanf("%d", &empID);
-
-                printf("Enter flight number: ");
-                scanf("%d", &flightNum);
-
-                printf("Enter crew number: ");
-                scanf("%d", &crewNum);
-
-                struct employee newEmployee;
-                createEmployee(&newEmployee, empID, flightNum);
-                addEmployee(&flights[flightNum - 1], &newEmployee, flightNum, crewNum - 1);
-                printf("Employee added successfully to flight %d\n", flightNum);
-                } else if (action == 2) {
-                    printf("Enter flight number: ");
-                    scanf("%d", &flightNum);
-            
-                    printf("Enter crew number: ");
-                    scanf("%d", &crewNum);
-            
-                    struct employee employeeToRemove = flights[flightNum - 1].employees[crewNum - 1];
-                    removeEmployee(&flights[flightNum - 1], &employeeToRemove, flightNum, crewNum - 1);
-                    printf("Employee removed successfully from flight %d\n", flightNum);
-                } else {
-                    printf("Invalid action. Please enter 1 or 2.\n");
-                }
-            break;
-            default: printf("you have selected to exit the program");
-        }
-}
+				companyInterface(flight, employees);
 				break;
 		}
 	}
