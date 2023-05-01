@@ -157,6 +157,7 @@ int accountAuthenticate(customer_t* client) {
 
 void customerInterface(customer_t* client, flight_t* flight, int *registry) {
 	int uAccount = 0;
+	int routeAvail = 0;
 	int userID = 1; //works for now
 	int route, userChoice;
 
@@ -210,6 +211,7 @@ void customerInterface(customer_t* client, flight_t* flight, int *registry) {
 			if (flight[i].AvailFlight == 1) {
 			printf ("Route %d\n", i);
 			PrintFlight (&flight[i]);
+			++routeAvail;
 			}
 		}
 		//printf("\nThere are 2 flights available at this moment.\n");
@@ -217,14 +219,14 @@ void customerInterface(customer_t* client, flight_t* flight, int *registry) {
 
 		do {
 			scanf("%d", &route);
-			if(!(route == 1 || route == 2))
+			if(route < 0 || route >= routeAvail)
 				printf("Error, please select a valid option and try again: ");
-			else if (flight[route - 1].capacity >= 40)	
+			else if (flight[route].capacity >= 40)	
 				printf("This flight has reached the max capacitants, please select a different flight: ");
-		} while (!(route == 1 || route == 2) || flight[route - 1].capacity >= 40);
+		} while ((route < 0 || route >= routeAvail) || flight[route].capacity >= 40);
 
-		printflSeats(flight, route - 1);
-		reserveSeats(flight, client, userID, route - 1);
+		printflSeats(flight, route);
+		reserveSeats(flight, client, userID, route);
 	}
 }
 
