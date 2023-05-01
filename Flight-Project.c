@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define MAXCLIENTS 20
 #define MAXROUTES 10
@@ -15,7 +17,25 @@ typedef struct {
 	int capacity;
 	int num;
     struct employee employees[4];
+    int AvailFlight;
+	int flightnumber;
+	float PriceofFlight;
+	int distance;
+	char InAirport[20];
+	char OutPort[20];
+	int InAirportCode;
+	int OutAirportCode;
+	int PlaneNumber;
 } flight_t;
+
+typedef struct Airport
+{
+  char Airport[20];
+  int AirportCity;
+  int AirportAvailability;
+} Airport;
+
+void PrintFlight (flight_t * point);
 
 typedef struct {
 	bool hasSlot;
@@ -112,7 +132,7 @@ void deleteUserSlot(flight_t* flight, customer_t* client, int userID) {
 
 int accountCreate (customer_t* client, int *registry) {
 	client[*registry].id = *registry + 1; //Implements ID
-	printf("\n* A new account has been generated with ID: %d\n", client[*registry].id);
+	printf("\n* A new account has been generated with ID: %d\n\n", client[*registry].id);
 	client[*registry].hasSlot = false;
 	++(*registry);
 
@@ -186,8 +206,14 @@ void customerInterface(customer_t* client, flight_t* flight, int *registry) {
 			return;
 		}
 
-		printf("\nThere are 2 flights available at this moment.\n");
-		printf("[1] Chicago\t[2] Austin\nSelect one of the options above: ");
+		for (int i=0; i < 10; i++) {
+			if (flight[i].AvailFlight == 1) {
+			printf ("Route %d\n", i);
+			PrintFlight (&flight[i]);
+			}
+		}
+		//printf("\nThere are 2 flights available at this moment.\n");
+		printf("\nSelect one of the routes above: ");
 
 		do {
 			scanf("%d", &route);
@@ -217,19 +243,217 @@ void removeEmployee(flight_t* flight, struct employee *employee, int fnum, int c
     flight[fnum - 1].employees[crewnum].flight = 0;
 }
 
-void companyInterface(flight_t* flight, struct employee *employee) {
+void companyInterface(flight_t* flight, struct employee *employee, Airport* NumberofAirports) {
 	int value;
+  int RevAdd, NewLocation;
 
 	printf("Do you want to manage routes, manage employees, or exit the program?\n"); 
-	printf("[1] Manage Routes \n[2] Manage Employees \n[hit any other numerical key] Exit Program \n");
+	printf("[1] Manage Routes \n[2] Manage Planes \n[3] Manage Airports \n[4] Manage Employees \n[hit any other numerical key] Exit Program \n");
 	scanf("%d", &value);
 		switch(value) {
-			case 1: printf("you have selected to manage routes");
-		{ 
-				//paste code here
+			case 1: printf("you have selected to manage routes\n");
+	
+    printf ("Enter [1] to Add a Route, [2] to remove.\n");
+  
+    do
+      {
+	scanf ("%d", &RevAdd);
+	if (RevAdd > 2 || RevAdd < 1)
+	  printf ("please enter [1] or [2]");
+      }
+    while (RevAdd > 2 || RevAdd < 1);
+//for the first thing
+    if (RevAdd == 1)
+      {
+	printf
+	  ("Select a destination to add by entering the number displayed next to the route\n");
+	printf ("Route Corpus to Austin [1]\n");
+	printf ("Route Austin to Houston [2]\n");
+	printf ("Route SanAntonio to Cospus [3]\n");
+
+	do
+	  {
+	    scanf ("%d", &NewLocation);
+	    if (NewLocation > 3 || NewLocation < 1)
+	      printf ("Please enter [1], [2] or [3]\n");
+	  }
+	while (NewLocation > 3 || NewLocation < 1);
+	if (NewLocation == 1)
+	  {
+	    if (flight[3].AvailFlight != 1)
+	      {
+		PrintFlight (&flight[3]);
+	      }
+	  }
+	if (NewLocation == 2)
+	  {
+	    if (flight[4].AvailFlight != 1)
+	      {
+		PrintFlight (&flight[4]);
+	      }
+	  }
+	if (NewLocation == 3)
+	  {
+	    if (flight[5].AvailFlight != 1)
+	      {
+		PrintFlight (&flight[5]);
+	      }
+	  }
+      }
+
+    if (RevAdd == 2)
+      {
+	printf ("Below are the available flights that can be removed.\n");
+	for (int i; i < 10; i++)
+	  {
+	    if (flight[i].AvailFlight == 1)
+	      {
+		printf ("Route %d\n", i);
+		PrintFlight (&flight[i]);
+
+	      }
+
+	  }
+	printf
+	  ("Enter the number of which route you would like to remove.\n");
+	do
+	  {
+	    scanf ("%d", &RevAdd);
+	    if (RevAdd > 5 || RevAdd < 0)
+	      printf ("Please Enter a route number to remove.\n");
+	  }
+	while (RevAdd > 5 || RevAdd < 0);
+	flight[RevAdd].AvailFlight = 0;
+  	//paste code here
 			}
 			break;
-			case 2: printf("you have selected to manage employees\n");
+			case 2:   printf ("Enter [1] to Remove a plane, [2] to Add one.\n ");
+  do
+    {
+      scanf ("%d", &RevAdd);
+      if (RevAdd > 2 || RevAdd < 1)
+	printf ("please enter [1] or [2]\n");
+    }
+  while (RevAdd > 2 || RevAdd < 1);
+  if (RevAdd == 1)
+    {
+      for (int i; i < 6; i++)
+	{
+	  if (flight[i].AvailFlight == 1)
+	    {
+	      printf ("ID %d, Plane %d\n\n", i,
+		      flight[i].PlaneNumber);
+	    }
+	}
+      printf
+	("Enter the ID number of the place(Not the Plane Number) to Remove a plane.\n");
+      do
+	{
+	  scanf ("%d", &RevAdd);
+	  if (RevAdd > 6 || RevAdd < 0)
+	    printf
+	      ("Please enter the ID number of the Plane you wish to remove.\n");
+	}
+      while (RevAdd > 6 || RevAdd < 0);
+      flight[RevAdd].AvailFlight = 0;
+      flight[RevAdd].PlaneNumber =
+	  flight[RevAdd].PlaneNumber + 1000;
+    }
+  if (RevAdd == 2)
+    {
+      for (int i; i < 6; i++)
+	{
+	  if (flight[i].AvailFlight == 0
+	      && flight[i].PlaneNumber >= 6000)
+	    {
+	      printf ("ID %d, Plane %d\n\n", i,
+		      flight[i].PlaneNumber);
+	    }
+	}
+      printf ("Enter the ID number of the place(Not the Plane Number) to Add a plane.\n");
+      do
+	{
+	  scanf ("%d", &RevAdd);
+	  if (RevAdd > 6 || RevAdd < 0)
+	    printf
+	      ("Please enter the ID number of the Plane you wish to Add.\n");
+	}
+      while (RevAdd > 6 || RevAdd < 0);
+      if (NumberofAirports[RevAdd].AirportCity ==
+	  flight[RevAdd].InAirportCode
+	  || NumberofAirports[RevAdd].AirportCity ==
+	  flight[RevAdd].OutAirportCode)
+	{
+	  if (NumberofAirports[RevAdd].AirportAvailability == 1)
+	    {
+	      flight[RevAdd].AvailFlight = 1;
+	    }
+	}
+      flight[RevAdd].PlaneNumber =
+	flight[RevAdd].PlaneNumber + 1000;
+    }
+			case 3:  printf ("Enter [1] to add an airport,[2] to remove one.\n");
+  do
+    {
+      scanf ("%d", &RevAdd);
+      if (RevAdd > 2 || RevAdd < 1)
+	printf ("please enter [1] or [2]\n");
+    }
+  while (RevAdd > 2 || RevAdd < 1);
+  if (RevAdd == 2)
+    {
+      for (int i = 0; i < 6; i++)
+	{
+	  if (NumberofAirports[i].AirportAvailability == 1)
+	    {
+
+	      printf ("Enter %d to remove %s Airport\n", i,
+		      NumberofAirports[i].Airport);
+
+	    }
+	}
+      do
+	{
+	  scanf ("%d", &RevAdd);
+	  if (RevAdd > 5 || RevAdd < 0)
+	    printf
+	      ("Please enter the number of the Airport you would like to remove\n");
+	}
+      while (RevAdd > 5 || RevAdd < 0);
+      NumberofAirports[RevAdd].AirportAvailability = 0;
+      for (int i; i < 6; i++)
+	{
+	  if (NumberofAirports[RevAdd].AirportCity ==
+	      flight[i].InAirportCode
+	      || NumberofAirports[RevAdd].AirportCity ==
+	      flight[i].OutAirportCode)
+	    {
+	      flight[i].AvailFlight = 0;
+	    }
+	}
+
+    }
+  if (RevAdd == 1)
+    {
+      for (int i = 0; i < 6; i++)
+	{
+	  if (NumberofAirports[i].AirportAvailability == 0)
+	    {
+	      printf ("Enter %d to Add %s Airport\n", i,
+		      NumberofAirports[i].Airport);
+	    }
+	}
+      do
+	{
+	  scanf ("%d", &RevAdd);
+	  if (RevAdd > 6 || RevAdd < 0)
+	    printf ("Please enter \n");
+	}
+      while (RevAdd > 6 || RevAdd < 0);
+      NumberofAirports[RevAdd].AirportAvailability = 1;
+
+    }
+			case 4:printf("you have selected to manage employees\n");
 				int empID, flightNum, crewNum, action;
 				printf("Enter 1 to add employee, 2 to remove employee: ");
 				scanf("%d", &action);
@@ -281,6 +505,98 @@ int main() {
 	struct employee employees[40];
 	int registry = 0;
 	int userOption = 0;
+ 	int NewLocation;
+  	int RevAdd;
+	Airport NumberofAirports[6];
+
+	strcpy (NumberofAirports[0].Airport, "Austin");
+	NumberofAirports[0].AirportCity = 0;
+	NumberofAirports[0].AirportAvailability = 1;
+
+	strcpy (NumberofAirports[1].Airport, "SanAntonio");
+	NumberofAirports[1].AirportCity = 1;
+	NumberofAirports[1].AirportAvailability = 1;
+
+	strcpy (NumberofAirports[2].Airport, "Houston");
+	NumberofAirports[2].AirportCity = 2;
+	NumberofAirports[2].AirportAvailability = 1;
+
+
+	strcpy (NumberofAirports[3].Airport, "Corpus");
+	NumberofAirports[3].AirportCity = 3;
+	NumberofAirports[3].AirportAvailability = 1;
+
+
+	strcpy (NumberofAirports[4].Airport, "Dallas");
+	NumberofAirports[4].AirportCity = 4;
+	NumberofAirports[4].AirportAvailability = 0;
+
+
+	strcpy (NumberofAirports[5].Airport, "Armadillo");
+	NumberofAirports[5].AirportCity = 5;
+	NumberofAirports[5].AirportAvailability = 0;
+
+	//Identify Flight routes
+	flight[0].flightnumber = 0;
+	flight[0].PlaneNumber = 5000;
+	flight[0].PriceofFlight = 450.90;
+	strcpy (flight[0].InAirport, "Austin");
+	flight[0].InAirportCode = 0;
+	strcpy (flight[0].OutPort, "SanAntonio");
+	flight[0].OutAirportCode = 1;
+	flight[0].distance = 80;
+	flight[0].AvailFlight = 1;
+
+	flight[1].flightnumber = 1;
+	flight[1].PlaneNumber = 5001;
+	flight[1].PriceofFlight = 390.25;
+	strcpy (flight[1].InAirport, "SanAntonio");
+	flight[1].InAirportCode = 1;
+	strcpy (flight[1].OutPort, "Houston");
+	flight[1].OutAirportCode = 2;
+	flight[1].distance = 200;
+	flight[1].AvailFlight = 1;
+
+	flight[2].flightnumber = 2;
+	flight[2].PlaneNumber = 5002;
+	flight[2].PriceofFlight = 330.25;
+	strcpy (flight[2].InAirport, "Houston");
+	flight[2].InAirportCode = 2;
+	strcpy (flight[2].OutPort, "Cospus");
+	flight[2].OutAirportCode = 3;
+	flight[2].distance = 210;
+	flight[2].AvailFlight = 1;
+
+	flight[3].flightnumber = 3;
+	flight[3].PlaneNumber = 5003;
+	flight[3].PriceofFlight = 270.25;
+	strcpy (flight[3].InAirport, "Corpus");
+	flight[3].InAirportCode = 3;
+	strcpy (flight[3].OutPort, "Austin");
+	flight[3].OutAirportCode = 0;
+	flight[3].distance = 217;
+	flight[3].AvailFlight = 0;
+
+	flight[4].flightnumber = 4;
+	flight[4].PlaneNumber = 6004;
+	flight[4].PriceofFlight = 190.25;
+	strcpy (flight[4].InAirport, "Austin");
+	flight[4].InAirportCode = 0;
+	strcpy (flight[4].OutPort, "Houston");
+	flight[4].OutAirportCode = 2;
+	flight[4].distance = 160;
+	flight[4].AvailFlight = 0;
+
+	flight[3].flightnumber = 5;
+	flight[3].PlaneNumber = 6005;
+	flight[3].PriceofFlight = 150.25;
+	strcpy (flight[3].InAirport, "SanAntonio");
+	flight[3].InAirportCode = 1;
+	strcpy (flight[3].OutPort, "Corpus");
+	flight[3].OutAirportCode = 3;
+	flight[3].distance = 150;
+	flight[3].AvailFlight = 0;
+
 
     for(int i = 0; i < MAXROUTES; ++i)
         initializeFlights(flight, i); //sets plane seat contents to zero for every plane
@@ -301,9 +617,22 @@ int main() {
 				customerInterface(client, flight, &registry);
 				break;
 			case 2:
-				companyInterface(flight, employees);
+				companyInterface(flight, employees, NumberofAirports);
 				break;
 		}
 	}
 	return 0;
+}
+
+void PrintFlight (flight_t * point)
+{
+  printf ("Flight Number %d\n", (*point).flightnumber);
+  printf ("Plane Number %d\n", (*point).PlaneNumber);
+  printf ("Flight Price %.2f\n", (*point).PriceofFlight);
+  printf ("Incoming Airport %s\n", (*point).InAirport);
+  printf ("Incoming Airport Code %d\n", (*point).InAirportCode);
+  printf ("Outgoing Airport %s\n", (*point).OutPort);
+  printf ("Outgoing Airport Code%d\n", (*point).OutAirportCode);
+  printf ("%d Mile Flight\n", (*point).distance);
+
 }
